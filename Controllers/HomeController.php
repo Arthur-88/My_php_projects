@@ -8,8 +8,9 @@ class HomeController
 {
     public function index()
     {
-        $user = User::getById(1);
 // Вызывает функцию 'getById' с параметром '1' класса Model
+        $user = User::getById(1);
+// Выводит на экран имя пользователя с параметрами $user
         return \View::render($user);
     }
 }
