@@ -1,12 +1,10 @@
 <?php
-return array(
-    '/users' => 'UserController/all',
-	'/user' => 'UserController/getById',
-    '/user/1' => 'UserController/getById/1',
-	'/user/2' => 'UserController/getById/1/3',	// для проверки садержимого массива $data в router.php
-    '/register' => 'RegisterController/index',
-    '/register/user' => 'RegisterController/user',
-    '/register/company' => 'RegisterController/company',
-    '/auth' => 'AuthController/index',
-    '/' => 'HomeController/index',
+return array
+(
+    '/users' => array('UserController','all'),
+	'/user/:num' => array('UserController','getById'),
+    '/register' => array('RegisterController','index'),
+    '/register/user/:text/:text/:text' => array('RegisterController','user'),
+    '/register/company' => array('RegisterController','company'),
+    '/auth/:num/:num' => array('AuthController','index'),
 );
