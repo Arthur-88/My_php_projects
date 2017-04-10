@@ -9,7 +9,9 @@ class RegisterController
 	}
 	public function user($name,$role,$pass)
 	{
-		$user = User::registerUser($name,$role,$pass);
+            var_dump($name,$role,$pass);
+		$user = (new User())->registerUser($name,$role,$pass);
+                var_dump($user);
 		return 'Пользователь '.$name.' зарегистрирован под '.$user.', роль '.$role;
 	}
 	public function company()

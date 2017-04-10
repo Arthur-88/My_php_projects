@@ -1,9 +1,68 @@
 <?php
 namespace Models;
+use PDO;
 class Model
 {
-	protected static $table;
-	public static function all()
+    protected $config;	// Конфиг БД
+    protected $mysql;	// Обьект соединения с БД при помощи PDO
+    protected $table;	// Используемая таблица
+    protected $attributes;
+
+//	Загружает конфиг
+//	Model constructor.
+    public function __construct()
+    {
+        $this->config = [
+            'HOST' => '127.0.0.1',
+            'DATABASE' => 'app',
+            'USER' => 'root',
+            'PASSWORD' => '',
+            'CHARSET' => 'utf8',
+        ];
+        $this->mysql = $this->mysql();
+    }
+
+//	Возвращает обьект PDO (соединение с бд)
+    protected function mysql()
+    {
+        $host = $this->config['HOST'];
+        $db   = $this->config['DATABASE'];
+        $user = $this->config['USER'];
+        $pass = $this->config['PASSWORD'];
+        $charset = $this->config['CHARSET'];
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $opt = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+        return new PDO($dsn, $user, $pass, $opt);
+    }
+
+	//	Получаем одну строку данных по ID
+    public function getById($id)
+    {
+        $stmt = $this->mysql->prepare('SELECT * FROM '. $this->table .' WHERE `id`=?');
+        $stmt->execute(array($id));
+        return $stmt->fetch();
+    }
+    public function authById($id,$pass)
+	{
+//        var_dump($id,$pass);
+            $stmt = $this->mysql->prepare('SELECT * FROM '. $this->table .' WHERE id=:id AND Pass=:pass');
+            $stmt->execute([':id'=>$id,':pass'=>$pass]);
+//            var_dump($stmt->fetch());
+            return $stmt->fetch();
+	}
+        
+    public function registerUser($name,$role,$pass)
+	{
+        $stmt = $this->mysql->prepare('INSERT INTO '. $this->table .' (Name, Role, Pass) values (:name, :role, :pass)');
+        $stmt->execute([':name'=>$name,':role'=>$role,':pass'=>$pass]);
+        return $this->mysql->lastInsertId();
+        }
+       
+/*        public static function all()
 	{
 		$file = fopen(static::getTable(), 'r');
 		$rowCounter = 0;
@@ -16,37 +75,5 @@ class Model
 		}
 		return $data;
 	}
-	public static function getById($id)
-	{
-		$file = fopen(static::getTable(), 'r');
-		$rowCounter = 0;
-		while ($row = fgetcsv($file, null, ';'))
-		{
-			$rowCounter++;
-			if ($rowCounter <= 1) continue;
-			if ($row[0] == $id) return $row;
-		}
-		return false;
-	}
-	
-	public static function getTable()
-	{
-		return 'Tables/' . static::$table;
-	}
+    */
 }
-// Указывает относительный путь к базе
-// protected - разрешает доступ наследуемым и родительским классам
-// static - значение переменной сохраняется после выполнения функции
-// Получаем все строки виде массива данных из базы
-// public - можно получить доступ из любого контекста
-// static - Для того, что бы можно было воспользоваться этим методом класса не создавая объект
-// fopen - Открывает файл или URL
-// static:: - обращение к вызывющему классу
-// 'r' - открывает файл только для чтения, помещает указатель в начало файла
-// fgetcsv - Читает строку из файла и производит разбор данных CSV, возвращает FALSE в случае ошибки, а также по достижению конца файла. NULL - максимальная длина строки не ограничена
-// ! fgetcsv ситывает построчно! и переходит к следующей строке
-// Добавляет в массив $data новые строки из таблицы. 1-я строка пропускается		
-// Получаем одну строку данных по ID
-// array_push - Добавить один или несколько элеметов в конец массива
-// Добавляет префикс к пути
-// Возвращает путь к файлу таблицы

@@ -8,7 +8,7 @@
     <title>Document</title>
 </head>
 <body>
-	<br>Hello Mr.{{1}}
-	<br>You are {{2}}
+	<br>Hello Mr.{{Name}}
+	<br>You are {{Role}}
 </body>
 </html>

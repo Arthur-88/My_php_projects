@@ -44,10 +44,10 @@ function searchByPattern($url, $routes)
 //				'params' => array_slice(parseURL($url),2)
 				'params' => $matches,
 			);
+			return $data;
 		}
-//			else throw new Exception('Путь не найден!');
 	}
-	return $data;
+	throw new Exception('Путь не найден!');
 }
 
 function call($className, $methodName, $paramsArray)

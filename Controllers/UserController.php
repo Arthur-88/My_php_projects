@@ -11,10 +11,9 @@ class UserController
 	
 	public function getById($id)
 	{
-		$user = User::getById($id);
+		$user = (new User())->getById($id);
 //		var_dump($user);
-		if($user)
-			return 'Пользователь c ID '. $user[0] . ' ' . $user[1];
+		if($user) return 'User ID '. $user['id'] . ' is ' . $user['Name'];
 		else
 			return 'Пользователь c id '.$id.' не зарегистрирован';
 	}
