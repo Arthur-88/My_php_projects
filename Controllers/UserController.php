@@ -17,6 +17,20 @@ class UserController
 		else
 			return 'Пользователь c id '.$id.' не зарегистрирован';
 	}
+        
+        public function updateUser($id,$name,$role,$pass)
+	{
+		$user = (new User())->updateUser($id,$name,$role,$pass);
+		var_dump($user);
+		return 'Пользователь c id '.$id.' '.$user.' заменен на '.$name;       
+	}
+        
+        public function deleteUser($id)
+	{
+		$user = (new User())->deleteUser($id);
+		var_dump($user);
+		return 'Пользователь c id '.$id.' '.$user.' удален';       
+	}
 }
 // Вызывает функцию 'getById' с параметром '1' класса Model
 // Выводит на экран имя пользователя с параметрами $user

@@ -12,7 +12,7 @@ class RegisterController
             var_dump($name,$role,$pass);
 		$user = (new User())->registerUser($name,$role,$pass);
                 var_dump($user);
-		return 'Пользователь '.$name.' зарегистрирован под '.$user.', роль '.$role;
+		return 'Пользователь '.$name.' зарегистрирован под id '.$user.', роль '.$role;
 	}
 	public function company()
 	{
