@@ -4,7 +4,7 @@ class View
 	public static function render(array $data)
 	{
 		ob_start();
-		require './Views/home.php';
+		require './Views/accordion/index.html';
 		$html = ob_get_clean();
 		foreach ($data as $key => $value)
 		{

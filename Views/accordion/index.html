@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>{{search}}</title>
+	<meta charset="utf-8" />
+	<link href="/Views/accordion/nl-accordion.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+	<form method="post">
+		<input type="text" value="{{search}}" name="search">
+		<input type="submit" name="submit" value="Отправить" formaction="VIDEOlist">
+		<input type="submit" name="sort" value="Сортировать по просмотрам" formaction="VIDEOlist/viewCount">
+        <p>Сколько результатов поиска вывести?
+		<input type="text" value="{{maxResults}}" name="maxResults">
+		</p>
+	</form>
+	<div id="myAccordion" class="nl-accordion">		
+		<ul>
+			{{output}}
+		</ul>
+	</div>
+</body>
+</html>

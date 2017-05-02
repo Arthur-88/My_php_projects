@@ -1,57 +1,99 @@
 <?php
+
 namespace Models;
-use PDO;
+use Helpers\JSON;
+
 class Model
 {
-    protected $config;	// Конфиг БД
-    protected $mysql;	// Обьект соединения с БД при помощи PDO
-    protected $table;	// Используемая таблица
-    protected $attributes;
-
-//	Загружает конфиг
-//	Model constructor.
-    public function __construct()
+	protected $search;
+	protected $maxResults;
+	
+	protected $VIDEOlist;
+	
+    public function getVIDEOlist($search,$maxResults)
     {
-        $this->config = [
-            'HOST' => '127.0.0.1',
-            'DATABASE' => 'app',
-            'USER' => 'root',
-            'PASSWORD' => '',
-            'CHARSET' => 'utf8',
-        ];
-        $this->mysql = $this->mysql();
-    }
+		$requestTYPE = 'search?';
+		$searchPARAMS = [
+			'part' => 'snippet',
+			'q' => &$search,
+			'order' => 'date',
+			'type' => 'video',
+			'maxResults' => &$maxResults,
+		];
 
-//	Возвращает обьект PDO (соединение с бд)
-    protected function mysql()
+		$this -> VIDEOlist = self::YTrequest($searchPARAMS,$requestTYPE);
+
+		if (!isset($this -> VIDEOlist))	return false;
+		return $this -> VIDEOlist;
+    }
+	
+	public function getVIDEOproperties($sort)
     {
-        $host = $this->config['HOST'];
-        $db   = $this->config['DATABASE'];
-        $user = $this->config['USER'];
-        $pass = $this->config['PASSWORD'];
-        $charset = $this->config['CHARSET'];
-        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-        $opt = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
-        return new PDO($dsn, $user, $pass, $opt);
-    }
-
-     
-/*  public static function all()
-	{
-		$file = fopen(static::getTable(), 'r');
-		$rowCounter = 0;
-		$data = array();
-		while ($row = fgetcsv($file, null, ';'))	
+		$requestTYPE = 'videos?';
+		$VIDEOlistFormated = array();
+		foreach($this -> VIDEOlist as $key => $value)
 		{
-			$rowCounter++;
-			if ($rowCounter <= 1) continue;
-			array_push($data, $row);
+			$videoParams = [
+				'id' => $value->id->videoId,
+				'part' => 'snippet,statistics,player',
+				'fields' => 'items(id,snippet(title,thumbnails,publishedAt,channelTitle),statistics(viewCount,likeCount,commentCount),player/embedHtml)',
+			];
+
+			$VIDEOstatistics = self::YTrequest($videoParams,$requestTYPE);
+
+			$VIDEOlistFormated[] = array
+			(   'id'            =>  $VIDEOstatistics[0] -> id,
+				'href'          =>  'https://www.youtube.com/embed/'.$VIDEOstatistics[0] -> id,
+				'title'         =>  $VIDEOstatistics[0] -> snippet      -> title,
+				'date'          =>  $VIDEOstatistics[0] -> snippet      -> publishedAt,
+				'image'         =>  $VIDEOstatistics[0] -> snippet      -> thumbnails   -> high -> url,
+				'width'         =>  $VIDEOstatistics[0] -> snippet      -> thumbnails   -> high -> width,
+				'height'        =>  $VIDEOstatistics[0] -> snippet      -> thumbnails   -> high -> height,
+				'viewCount'     =>  $VIDEOstatistics[0] -> statistics   -> viewCount,
+				'likeCount'     =>  $VIDEOstatistics[0] -> statistics   -> likeCount,
+				'commentCount'  =>  $VIDEOstatistics[0] -> statistics   -> commentCount,
+				'VIDEOtag'      =>  $VIDEOstatistics[0] -> player       -> embedHtml,
+				'author'		=>	$VIDEOstatistics[0] -> snippet      -> channelTitle,
+			);
 		}
-		return $data;
+	   
+		$VIDEOlistSorted = self::sortVIDEO($VIDEOlistFormated,$sort);
+		return $VIDEOlistSorted;
 	}
-    */
+	
+	protected function YTrequest(array $PARAMS,$requestTYPE)
+    {
+		$url = 'https://www.googleapis.com/youtube/v3/';
+		$PARAMS['key'] = 'AIzaSyCrX_jSWKcLPqkTIJ7FqNe_kEh4qt6AL10';
+		$requestPARAMS = http_build_query($PARAMS);
+		$HTTPrequest = $url.$requestTYPE.'&'.$requestPARAMS;
+		
+		$curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $HTTPrequest);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,	FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,	FALSE);
+        $result_JSON = curl_exec($curl);
+        curl_close($curl);
+		$result_ARRAY = JSON::fromJson($result_JSON);
+		$result = $result_ARRAY -> items;
+		return $result;
+    }
+
+	public static function sortVIDEO($VIDEOlistFormated, $sort)
+	{
+		for($i=0;$i+1<count($VIDEOlistFormated);)
+			{
+				if ($VIDEOlistFormated[$i][$sort] < $VIDEOlistFormated[$i+1][$sort])
+				{
+					$TEMPVIDEOlist = $VIDEOlistFormated[$i+1];
+					$VIDEOlistFormated[$i+1] = $VIDEOlistFormated[$i];
+					$VIDEOlistFormated[$i] = $TEMPVIDEOlist;
+					$i = 0;
+				}
+				else $i++;
+			}
+			return $VIDEOlistFormated;
+	}
+
 }

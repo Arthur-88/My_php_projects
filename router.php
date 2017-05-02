@@ -1,7 +1,11 @@
 <?php
+
 $url = $_SERVER['REQUEST_URI'];
-$routes = require'./routes.php';
+
+$routes = include'./routes.php';
+
 $data = parseRoute($url, $routes);
+
 echo call($data['class'], $data['method'], $data['params']);
 
 function parseRoute($url, $routes)
@@ -12,9 +16,9 @@ function parseRoute($url, $routes)
 		(
 			'class' => $routes[$url][0],
 			'method' => $routes[$url][1],
-			'params' => array_slice(parseURL($url),2)
+			'params' => array_slice(parseURL($url),3)
 		);
-		}
+	}
 	else
 	{
 		$data = searchByPattern($url, $routes);
@@ -36,13 +40,13 @@ function searchByPattern($url, $routes)
 		$pattern = str_replace(':text', '([\w]+)', $pattern);
 		if (preg_match('{^'. $pattern .'$}', $url, $matches))
 		{
-			array_shift($matches);
+//			array_shift($matches);
 			$data = array
 			(
 				'class' => $routes[$key][0],
 				'method' => $routes[$key][1],
-//				'params' => array_slice(parseURL($url),2)
-				'params' => $matches,
+				'params' => array_slice(parseURL($url),3)
+//				'params' => $matches,
 			);
 			return $data;
 		}
